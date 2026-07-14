@@ -13,6 +13,12 @@
     "prisma:generate": "pnpm --filter backend prisma:generate",
     "prisma:migrate": "pnpm --filter backend prisma:migrate",
     "prisma:studio": "pnpm --filter backend prisma:studio",
+    "lint": "pnpm -r lint",
+    "lint:fix": "pnpm -r lint --fix",
+    "typecheck": "pnpm -r typecheck",
+    "build": "pnpm -r build",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
     "prepare": "husky"
   },
   "keywords": [],
