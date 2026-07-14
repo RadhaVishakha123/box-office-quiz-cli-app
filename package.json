@@ -16,7 +16,7 @@
     "lint": "pnpm -r lint",
     "lint:fix": "pnpm -r lint --fix",
     "typecheck": "pnpm -r typecheck",
-    "build": "pnpm -r build",
+    "build": "pnpm --filter backend build",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "prepare": "husky"
