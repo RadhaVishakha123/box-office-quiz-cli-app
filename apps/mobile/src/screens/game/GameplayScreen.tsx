@@ -4,13 +4,22 @@ import {
   Text,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
+  ImageBackground,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/Feather';
+import { View as MotiView } from 'moti';
+
+// Native Vector Icons
+import Feather from 'react-native-vector-icons/Feather';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+
 import { useTheme } from '../../hooks/useTheme';
 import { useAuth } from '../../hooks/useAuth';
 import { getQuestion, updateLevelData } from '../../services/api';
+import ResultOverlay from '../../components/ResultOverlay';
+
+const { width } = Dimensions.get('window');
 
 export default function GameplayScreen({ route, navigation }: any) {
   const { mode, level } = route.params;
@@ -21,19 +30,16 @@ export default function GameplayScreen({ route, navigation }: any) {
   const [questionData, setQuestionData] = useState<any>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isEvaluated, setIsEvaluated] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [hasWon, setHasWon] = useState(false);
 
   useEffect(() => {
     async function loadQuestion() {
       try {
         const res = await getQuestion(mode, level);
         if (res.success && res.question.length > 0) {
-          // Backend returns array matching condition lookup indexes elements
           setQuestionData(res.question[0]);
         } else {
-          Alert.alert(
-            'Error',
-            'Could not track down level data asset parameters.',
-          );
           navigation.goBack();
         }
       } catch (err) {
@@ -49,14 +55,13 @@ export default function GameplayScreen({ route, navigation }: any) {
     return (
       <View
         className="flex-1 justify-center items-center"
-        style={{ backgroundColor: theme.background }}
+        style={{ backgroundColor: '#09090b' }}
       >
         <ActivityIndicator size="large" color={theme.primary} />
       </View>
     );
   }
 
-  // Safely grab the structural payload fields injected inside the Prisma JSON Column block
   const gameContent = questionData?.content || {};
   const { correctAnswer, options = [], emojis, dialogue, clue } = gameContent;
 
@@ -65,142 +70,175 @@ export default function GameplayScreen({ route, navigation }: any) {
 
     setSelectedAnswer(chosenOption);
     setIsEvaluated(true);
-    const hasWon = chosenOption === correctAnswer;
+    const winState = chosenOption === correctAnswer;
+    setHasWon(winState);
 
     try {
-      await updateLevelData(user?.id as number, mode, level, hasWon);
-
-      if (hasWon) {
-        Alert.alert('Shandaar! 🎉', 'Correct Answer!', [
-          {
-            text: 'Next Level',
-            onPress: () =>
-              navigation.replace('GameplayScreen', { mode, level: level + 1 }),
-          },
-        ]);
-      } else {
-        Alert.alert('Oops! 💥', 'Wrong Answer. Try again!', [
-          {
-            text: 'Next Level',
-            onPress: () =>
-              navigation.replace('GameplayScreen', { mode, level: level + 1 }),
-          },
-        ]);
-      }
+      await updateLevelData(user?.id as number, mode, level, winState);
+      setTimeout(() => {
+        setShowResultModal(true);
+      }, 600);
     } catch (err) {
-      console.error('Failed saving win state status mutations updates', err);
+      console.error('Failed saving score update mutations', err);
     }
   };
 
+  const handleNextAction = () => {
+    setShowResultModal(false);
+    navigation.replace('GameplayScreen', { mode, level: level + 1 });
+  };
+
   return (
-    <SafeAreaView
-      className="flex-1 px-4"
-      style={{ backgroundColor: theme.background }}
-    >
-      {/* Header bar dashboard elements mapping configuration tracking view line */}
-      <View className="py-3 flex-row justify-between items-center mb-6">
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="x" size={24} color={theme.text} />
-        </TouchableOpacity>
-        <Text className="text-lg font-black" style={{ color: theme.text }}>
-          Level {level}
-        </Text>
-        <View className="w-6" />
-      </View>
+    <>
+      <ImageBackground
+        source={require('../../../assets/background_bg.png')}
+        className="flex-1"
+        resizeMode="cover"
+      >
+        <View className="absolute inset-0 bg-black/30" />
 
-      {/* --- DYNAMIC UI LAYOUT SWITCH BASED ON GAME MODE CONTEXT TYPE STRINGS --- */}
-      <View className="flex-1 justify-center items-center mb-8">
-        {mode === 'EMOJI_RIDDLES' && (
-          <View className="items-center">
-            <Text className="text-7xl mb-4 tracking-widest">{emojis}</Text>
-            <Text
-              className="text-sm text-center font-medium"
-              style={{ color: theme.textSecondary }}
+        <SafeAreaView className="flex-1 px-5 justify-start">
+          {/* --- Top Navbar Header Bar --- */}
+          <View className="py-4 flex-row justify-between items-center border-b border-white/10">
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              className="p-2 rounded-full  border border-white/10 active:bg-white/10"
+              style={{ backgroundColor: theme.iconBg }}
             >
-              Guess the Bollywood film sequence from the emojis above!
-            </Text>
-          </View>
-        )}
-
-        {mode === 'DIALOGUE_GURU' && (
-          <View
-            className="p-6 rounded-2xl border w-full bg-slate-50/5"
-            style={{ borderColor: theme.border }}
-          >
+              <Feather name="x" size={width * 0.05} color={theme.iconText} />
+            </TouchableOpacity>
             <Text
-              className="text-3xl text-center italic font-serif font-bold mb-2"
+              className="text-xl font-black tracking-widest uppercase"
               style={{ color: theme.text }}
             >
-              "{dialogue}"
+              Level {level}
             </Text>
-            <Text className="text-xs text-center uppercase tracking-wider text-amber-500 font-bold">
-              Who delivered this legendary line?
-            </Text>
+            <View style={{ width: width * 0.09 }} className="opacity-0" />
           </View>
-        )}
 
-        {/* Fallback baseline placeholder elements structure view for options formats */}
-        {(mode === 'BLURRED_POSTER' ||
-          mode === 'SPOT_THE_EXACT' ||
-          mode === 'MISSING_LETTERS') && (
-          <View className="items-center px-4">
-            {clue && (
-              <Text
-                className="text-lg font-bold text-center mb-2"
-                style={{ color: theme.text }}
-              >
-                {clue}
-              </Text>
+          {/* --- Top-Aligned Solid Game Arena Module --- */}
+          <MotiView
+            from={{ opacity: 0, translateY: -15 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: 'spring', duration: 400 }}
+            className="w-full mt-4 mb-5 pt-2"
+          >
+            {mode === 'EMOJI_RIDRLES' || mode === 'EMOJI_RIDDLES' ? (
+              <View className="items-center p-6 w-full bg-amber-50 border-2 border-amber-400 rounded-3xl shadow-xl">
+                <MotiView
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ type: 'timing', duration: 2500, loop: true }}
+                >
+                  <Text className="text-6xl mb-4 tracking-widest text-center">
+                    {emojis}
+                  </Text>
+                </MotiView>
+                <Text className="text-zinc-800 text-center font-bold text-sm px-2 leading-relaxed">
+                  Decode the visual elements above to spot the hidden Bollywood
+                  release sequence!
+                </Text>
+              </View>
+            ) : mode === 'DIALOGUE_GURU' ? (
+              <View className="p-6 rounded-3xl border-2  bg-amber-50 border-2 border-amber-400 w-full  shadow-xl relative overflow-hidden">
+                <Text className="text-xl text-center font-serif font-black mb-3 text-indigo-9s00 leading-relaxed italic">
+                  "{dialogue}"
+                </Text>
+                <Text className="text-xs text-center uppercase tracking-widest text-zinc-600 font-extrabold">
+                  Who delivered this iconic classic line?
+                </Text>
+              </View>
+            ) : (
+              <View className="items-center p-6 w-full  bg-amber-50 border-2 border-amber-400 rounded-3xl shadow-xl">
+                {clue ? (
+                  <Text className="text-lg font-black text-center mb-2 text-zinc-900 px-1 leading-snug">
+                    {clue}
+                  </Text>
+                ) : (
+                  <Text className="text-lg font-black text-center mb-2 text-zinc-900 tracking-wide">
+                    Spotted the Perfect Fit?
+                  </Text>
+                )}
+                <Text className="text-xs text-center text-zinc-600 font-medium tracking-wide uppercase">
+                  Analyze your options closely to clear this challenge.
+                </Text>
+              </View>
             )}
-            <Text
-              className="text-xs text-center"
-              style={{ color: theme.textSecondary }}
-            >
-              Analyze the choices carefully below to match correctly.
-            </Text>
+          </MotiView>
+
+          {/* --- Solid Choice Interactive Grid Layout --- */}
+          <View className="pb-8 mt-6">
+            {options.map((option: string, idx: number) => {
+              const isSelected = selectedAnswer === option;
+              const isCorrect = option === correctAnswer;
+
+              // Crisp solid baselines avoiding color transparency overlays
+              let borderStyle = 'border-zinc-300';
+              let bgStyle = 'bg-white';
+              let textStyle = 'text-zinc-800';
+
+              if (isEvaluated) {
+                if (isCorrect) {
+                  borderStyle = 'border-emerald-500';
+                  bgStyle = 'bg-emerald-100';
+                  textStyle = 'text-emerald-900 font-black';
+                } else if (isSelected && !isCorrect) {
+                  borderStyle = 'border-rose-500';
+                  bgStyle = 'bg-rose-100';
+                  textStyle = 'text-rose-900 font-black';
+                } else {
+                  borderStyle = 'border-zinc-200';
+                  bgStyle = 'bg-zinc-200';
+                  textStyle = 'text-zinc-400line-through';
+                }
+              }
+
+              return (
+                <MotiView
+                  key={idx}
+                  from={{ opacity: 0, translateY: 15 }}
+                  animate={{ opacity: 1, translateY: 0 }}
+                  transition={{ type: 'timing', delay: idx * 60 }}
+                >
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    disabled={isEvaluated}
+                    onPress={() => handleOptionPress(option)}
+                    className={`w-full py-4 px-6 rounded-2xl border-2 mb-3 flex-row justify-between items-center shadow-sm ${bgStyle} ${borderStyle}`}
+                  >
+                    <Text
+                      className={`text-base font-black tracking-wide ${textStyle}`}
+                    >
+                      {option}
+                    </Text>
+                    {isEvaluated && isCorrect && (
+                      <MaterialIcons
+                        name="check-circle"
+                        size={width * 0.055}
+                        color="#059669"
+                      />
+                    )}
+                    {isEvaluated && isSelected && !isCorrect && (
+                      <MaterialIcons
+                        name="cancel"
+                        size={width * 0.055}
+                        color="#DC2626"
+                      />
+                    )}
+                  </TouchableOpacity>
+                </MotiView>
+              );
+            })}
           </View>
-        )}
-      </View>
-
-      {/* --- MULTIPLE CHOICE RENDERING GRID ACTION OPTIONS MODULE --- */}
-      <View className="pb-8">
-        {options.map((option: string, idx: number) => {
-          const isSelected = selectedAnswer === option;
-          const isCorrect = option === correctAnswer;
-
-          let btnBorderColor = theme.border;
-          let btnBg = theme.card;
-
-          if (isEvaluated && isSelected) {
-            btnBorderColor = isCorrect ? '#22C55E' : '#EF4444';
-            btnBg = isCorrect ? '#DCFCE7' : '#FEE2E2';
-          }
-
-          return (
-            <TouchableOpacity
-              key={idx}
-              activeOpacity={0.8}
-              disabled={isEvaluated}
-              onPress={() => handleOptionPress(option)}
-              className="w-full py-4 px-6 rounded-2xl border-2 mb-3 flex-row justify-between items-center"
-              style={{ backgroundColor: btnBg, borderColor: btnBorderColor }}
-            >
-              <Text
-                className="text-base font-bold"
-                style={{ color: theme.text }}
-              >
-                {option}
-              </Text>
-              {isEvaluated && isCorrect && (
-                <Icon name="check-circle" size={20} color="#22C55E" />
-              )}
-              {isEvaluated && isSelected && !isCorrect && (
-                <Icon name="x-circle" size={20} color="#EF4444" />
-              )}
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-    </SafeAreaView>
+          <ResultOverlay
+            isVisible={showResultModal}
+            hasWon={hasWon}
+            correctAnswer={correctAnswer}
+            currentLevel={level}
+            onNext={handleNextAction}
+          />
+          {/* --- Custom In-App Evaluation Drawer Sheet --- */}
+        </SafeAreaView>
+      </ImageBackground>
+    </>
   );
 }

@@ -23,6 +23,8 @@
     "react": "19.2.3",
     "react-hook-form": "^7.81.0",
     "react-native": "0.86.0",
+    "react-native-confetti": "^0.1.0",
+    "react-native-confetti-cannon": "^1.5.2",
     "react-native-config": "^1.6.1",
     "react-native-device-info": "^15.0.2",
     "react-native-gesture-handler": "^3.0.2",

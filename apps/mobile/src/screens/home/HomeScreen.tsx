@@ -16,6 +16,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { AppStackParamList } from '../../navigation/type';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
+import { View as MotiView } from 'moti';
 const { width } = Dimensions.get('window');
 export default function HomeScreen() {
   const navigation =
@@ -121,7 +122,6 @@ export default function HomeScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 120 }}
         >
-          {/* --- HEADER PROFILE SECTION --- */}
           <View className="px-4 pt-4 flex-row justify-between items-center">
             <View className="flex-row items-center space-x-3">
               <View
@@ -145,8 +145,6 @@ export default function HomeScreen() {
                 </Text>
               </View>
             </View>
-
-            {/* Right Stats Badges */}
             <View className="flex-row items-center space-x-2">
               <View
                 className="flex-row items-center px-2.5 py-1.5 rounded-full border mr-1"
@@ -185,8 +183,6 @@ export default function HomeScreen() {
               </View>
             </View>
           </View>
-
-          {/* --- HERO BANNER --- */}
           <View
             className="m-4 rounded-3xl p-6 relative overflow-hidden bg-white border"
             style={{ borderColor: theme.border }}
@@ -256,11 +252,20 @@ export default function HomeScreen() {
               </Text>
             </View>
           </View>
-
-          {/* --- 2-COLUMN GRID GAME CARDS CONTAINER --- */}
           <View className="px-4 flex-row flex-wrap justify-between">
             {gameModes.map(mode => (
-              <CardPage key={mode.id} mode={mode} />
+              <MotiView
+                key={mode.id}
+                from={{ opacity: 0, translateY: 15 }}
+                animate={{ opacity: 1, translateY: 0 }}
+                transition={{
+                  type: 'timing',
+                  delay: mode.id * 60,
+                  duration: 200,
+                }}
+              >
+                <CardPage key={mode.id} mode={mode} />
+              </MotiView>
             ))}
           </View>
         </ScrollView>
