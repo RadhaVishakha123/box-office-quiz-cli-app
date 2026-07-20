@@ -16,7 +16,6 @@ async function main() {
       mode: GameMode.BLURRED_POSTER,
       levelNumber: 1,
       content: {
-        points: 100,
         imageUrl: 'https://cdn.yourgame.com/posters/blurred_ddlj.png',
         options: [
           'Dilwale Dulhania Le Jayenge',
@@ -31,7 +30,6 @@ async function main() {
       mode: GameMode.BLURRED_POSTER,
       levelNumber: 2,
       content: {
-        points: 100,
         imageUrl: 'https://cdn.yourgame.com/posters/blurred_sholay.png',
         options: ['Don', 'Zanjeer', 'Sholay', 'Deewaar'],
         correctAnswer: 'Sholay',
@@ -41,7 +39,6 @@ async function main() {
       mode: GameMode.BLURRED_POSTER,
       levelNumber: 3,
       content: {
-        points: 100,
         imageUrl: 'https://cdn.yourgame.com/posters/blurred_3idiots.png',
         options: ['PK', '3 Idiots', 'Dangal', 'Taare Zameen Par'],
         correctAnswer: '3 Idiots',
@@ -51,7 +48,6 @@ async function main() {
       mode: GameMode.BLURRED_POSTER,
       levelNumber: 4,
       content: {
-        points: 100,
         imageUrl: 'https://cdn.yourgame.com/posters/blurred_bahubali.png',
         options: ['Baahubali: The Beginning', 'RRR', 'KGF', 'Pushpa'],
         correctAnswer: 'Baahubali: The Beginning',
@@ -61,7 +57,6 @@ async function main() {
       mode: GameMode.BLURRED_POSTER,
       levelNumber: 5,
       content: {
-        points: 100,
         imageUrl: 'https://cdn.yourgame.com/posters/blurred_jawan.png',
         options: ['Pathaan', 'Jawan', 'Dunki', 'Raees'],
         correctAnswer: 'Jawan',
@@ -75,7 +70,6 @@ async function main() {
       mode: GameMode.EMOJI_RIDDLES,
       levelNumber: 1,
       content: {
-        points: 100,
         emojis: '🦁👑',
         options: ['Singham', 'Sher Khan', 'The Lion King', 'Jungle Book'],
         correctAnswer: 'The Lion King',
@@ -85,7 +79,6 @@ async function main() {
       mode: GameMode.EMOJI_RIDDLES,
       levelNumber: 2,
       content: {
-        points: 100,
         emojis: '🎸🧑‍🎤🥁',
         options: ['Rockstar', 'Rock On!!', 'Aashiqui 2', 'Gully Boy'],
         correctAnswer: 'Rock On!!',
@@ -95,7 +88,6 @@ async function main() {
       mode: GameMode.EMOJI_RIDDLES,
       levelNumber: 3,
       content: {
-        points: 100,
         emojis: '👓🎒✈️',
         options: [
           'Zindagi Na Milegi Dobara',
@@ -110,7 +102,6 @@ async function main() {
       mode: GameMode.EMOJI_RIDDLES,
       levelNumber: 4,
       content: {
-        points: 100,
         emojis: '🥛🏃‍♂️🏅',
         options: ['Bhaag Milkha Bhaag', 'Dangal', 'Mary Kom', 'Chak De! India'],
         correctAnswer: 'Bhaag Milkha Bhaag',
@@ -120,7 +111,6 @@ async function main() {
       mode: GameMode.EMOJI_RIDDLES,
       levelNumber: 5,
       content: {
-        points: 100,
         emojis: '👻🏰👑',
         options: ['Stree', 'Bhool Bhulaiyaa', 'Roohi', 'Bhootnath'],
         correctAnswer: 'Bhool Bhulaiyaa',
@@ -134,7 +124,6 @@ async function main() {
       mode: GameMode.LETTER_PUZZLE,
       levelNumber: 1,
       content: {
-        points: 100,
         scrambledLetters: ['S', 'H', 'Y', 'O', 'M', 'E'],
         clue: "Amitabh Bachchan and Dharmendra's legendary cinematic epic.",
         correctAnswer: 'SHOLAY',
@@ -144,7 +133,6 @@ async function main() {
       mode: GameMode.LETTER_PUZZLE,
       levelNumber: 2,
       content: {
-        points: 100,
         scrambledLetters: ['A', 'G', 'L', 'N', 'A'],
         clue: 'Aamir Khan British-era cricket match masterpiece nominated for an Oscar.',
         correctAnswer: 'LAGAAN',
@@ -154,7 +142,6 @@ async function main() {
       mode: GameMode.LETTER_PUZZLE,
       levelNumber: 3,
       content: {
-        points: 100,
         scrambledLetters: ['K', 'N', 'A', 'P', 'I'],
         clue: 'Amitabh Bachchan and Taapsee Pannu court-room thriller drama.',
         correctAnswer: 'PINK',
@@ -164,7 +151,6 @@ async function main() {
       mode: GameMode.LETTER_PUZZLE,
       levelNumber: 4,
       content: {
-        points: 100,
         scrambledLetters: ['A', 'N', 'B', 'R', 'A'],
         clue: 'Ranbir Kapoor and Priyanka Chopra comedy-drama about unique love.',
         correctAnswer: 'BARFI',
@@ -174,7 +160,6 @@ async function main() {
       mode: GameMode.LETTER_PUZZLE,
       levelNumber: 5,
       content: {
-        points: 100,
         scrambledLetters: ['U', 'D', 'M', 'B', 'O'],
         clue: 'Classic horror-comedy set in Chanderi starring Rajkummar Rao.',
         correctAnswer: 'STREE',
@@ -188,7 +173,6 @@ async function main() {
       mode: GameMode.DIALOGUE_GURU,
       levelNumber: 1,
       content: {
-        points: 100,
         dialogue: 'Mogambo khush hua!',
         options: ['Sholay', 'Mr. India', 'Shaan', 'Agneepath'],
         correctAnswer: 'Mr. India',
@@ -198,7 +182,6 @@ async function main() {
       mode: GameMode.DIALOGUE_GURU,
       levelNumber: 2,
       content: {
-        points: 100,
         dialogue:
           'Bade bade deshon mein aisi chhoti chhoti baatein hoti rehti hain, Senorita.',
         options: [
@@ -214,7 +197,6 @@ async function main() {
       mode: GameMode.DIALOGUE_GURU,
       levelNumber: 3,
       content: {
-        points: 100,
         dialogue: 'Don ko pakadna mushkil hi nahi... namumkin hai.',
         options: ['Zanjeer', 'Don', 'Agneepath', 'Deewaar'],
         correctAnswer: 'Don',
@@ -224,7 +206,6 @@ async function main() {
       mode: GameMode.DIALOGUE_GURU,
       levelNumber: 4,
       content: {
-        points: 100,
         dialogue: 'All is well.',
         options: ['PK', '3 Idiots', 'Taare Zameen Par', 'Munna Bhai M.B.B.S.'],
         correctAnswer: '3 Idiots',
@@ -234,7 +215,6 @@ async function main() {
       mode: GameMode.DIALOGUE_GURU,
       levelNumber: 5,
       content: {
-        points: 100,
         dialogue: 'Ek chutki sindoor ki keemat tum kya jaano Ramesh babu.',
         options: ['Om Shanti Om', 'Devdas', 'Main Hoon Na', 'Chennai Express'],
         correctAnswer: 'Om Shanti Om',
@@ -248,7 +228,6 @@ async function main() {
       mode: GameMode.SPOT_THE_EXACT,
       levelNumber: 1,
       content: {
-        points: 100,
         options: [
           'Kabhi Khushi Kabhi Gham',
           'Kabhi Khushi Kabhie Gham',
@@ -262,7 +241,6 @@ async function main() {
       mode: GameMode.SPOT_THE_EXACT,
       levelNumber: 2,
       content: {
-        points: 100,
         options: [
           'Zindagi Na Milegi Dobara',
           'Zindagi Na Milegi Dobarah',
@@ -276,7 +254,6 @@ async function main() {
       mode: GameMode.SPOT_THE_EXACT,
       levelNumber: 3,
       content: {
-        points: 100,
         options: [
           'Dilwale Dulhaniya Le Jayenge',
           'Dilwale Dulhania Le Jayenge',
@@ -290,7 +267,6 @@ async function main() {
       mode: GameMode.SPOT_THE_EXACT,
       levelNumber: 4,
       content: {
-        points: 100,
         options: [
           'Gangs of Wasseypur',
           'Gangs of Waaseypur',
@@ -304,7 +280,6 @@ async function main() {
       mode: GameMode.SPOT_THE_EXACT,
       levelNumber: 5,
       content: {
-        points: 100,
         options: [
           'Bajirao Mastani',
           'Bajerao Mastani',
@@ -322,50 +297,50 @@ async function main() {
       mode: GameMode.MISSING_LETTERS,
       levelNumber: 1,
       content: {
-        points: 100,
         maskedWord: 'D_NG_L',
         clue: "Aamir Khan's record-breaking wrestling biopic.",
         correctAnswer: 'DANGAL',
+        scrambledLetters: ['A', 'A', 'N', 'M', 'G', 'L', 'O', 'P'], // Missing: A, A
       },
     },
     {
       mode: GameMode.MISSING_LETTERS,
       levelNumber: 2,
       content: {
-        points: 100,
         maskedWord: 'P_TH__N',
         clue: "Shah Rukh Khan's grand espionage action comeback movie.",
         correctAnswer: 'PATHAAN',
+        scrambledLetters: ['A', 'A', 'A', 'R', 'H', 'M', 'T', 'S'], // Missing: A, H, A
       },
     },
     {
       mode: GameMode.MISSING_LETTERS,
       levelNumber: 3,
       content: {
-        points: 100,
         maskedWord: 'BR_HM_STR_',
         clue: 'Astraverse fantasy film starring Ranbir Kapoor and Alia Bhatt.',
         correctAnswer: 'BRAHMASTRA',
+        scrambledLetters: ['A', 'A', 'A', 'M', 'S', 'H', 'K', 'T', 'V', 'B'], // Missing: A, A, A
       },
     },
     {
       mode: GameMode.MISSING_LETTERS,
       levelNumber: 4,
       content: {
-        points: 100,
         maskedWord: 'QU__N',
         clue: 'Kangana Ranaut solo honeymoon cult classic movie.',
         correctAnswer: 'QUEEN',
+        scrambledLetters: ['E', 'E', 'O', 'U', 'I', 'N', 'Z', 'M'], // Missing: E, E
       },
     },
     {
       mode: GameMode.MISSING_LETTERS,
       levelNumber: 5,
       content: {
-        points: 100,
         maskedWord: 'CH_K D_! IND__',
         clue: 'Legendary Indian women hockey team sports drama.',
         correctAnswer: 'CHAK DE! INDIA',
+        scrambledLetters: ['A', 'E', 'I', 'A', 'K', 'D', 'N', 'H', 'S', 'T'], // Missing: A, E, I, A
       },
     },
   ];
