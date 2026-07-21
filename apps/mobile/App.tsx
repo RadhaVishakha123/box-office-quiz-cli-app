@@ -14,14 +14,30 @@ import AppStack from './src/navigation/AppStack';
 import { NavigationContainer } from '@react-navigation/native';
 import { ImageBackground } from 'react-native';
 import { handleDeviceOnboarding } from './src/services/api';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import { useAuth } from './src/hooks/useAuth';
+import useAuthStore from './src/stores/auth.store';
+import { getQuestionsCount } from './src/services/api';
 
 function App() {
   const getState = useAlertStore();
-  const { user, setUser } = useAuth();
+  const { user, setUser, setTotalQuestions } = useAuth();
+  const [isReady, setIsReady] = useState(false);
+  useEffect(() => {
+    const checkHydration = async () => {
+      if (useAuthStore.persist.hasHydrated()) {
+        setIsReady(true);
+      } else {
+        const unsub = useAuthStore.persist.onFinishHydration(() => {
+          setIsReady(true);
+          unsub(); //Stop listening.
+        });
+      }
+    };
+    checkHydration();
+  });
   const handleConfirm = () => {
     if (getState.onConfirm) {
       getState.onConfirm();
@@ -41,11 +57,16 @@ function App() {
       const deviceToken = await DeviceInfo.getUniqueId();
       const deviceType = Platform.OS;
       const response = await handleDeviceOnboarding(deviceToken, deviceType);
+      console.log('user data from response:', response);
+      const totalQuestions = await getQuestionsCount();
+      setTotalQuestions(totalQuestions.questionsCount);
       setUser(response.user);
     };
     onboardDevice();
-  }, [setUser, user]);
-
+  }, [setUser, user, setTotalQuestions]);
+  if (!isReady) {
+    return null;
+  }
   return (
     <ImageBackground
       source={require('./assets/background_bg.png')}

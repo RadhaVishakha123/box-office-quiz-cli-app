@@ -22,3 +22,14 @@ export const GameMode = {
 } as const;
 
 export type GameMode = (typeof GameMode)[keyof typeof GameMode];
+export interface User {
+  userId: number;
+  name: string;
+  avatar: string;
+  wonCount: number;
+  lostCount: number;
+}
+export interface UserProgress {
+  wonCount: number;
+  lostCount: number;
+}

@@ -3,13 +3,18 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   ImageBackground,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import { formatName } from '../../utils/game.util';
+import { useState, useCallback, useMemo } from 'react';
+import { UserProgress as User } from '../../types/type';
+import { calculateUserRewards } from '../../utils/game.util';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../hooks/useTheme';
-import Icon from 'react-native-vector-icons/Feather';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import CardPage from '../../components/CardPage';
 import { Card } from '../../types/type';
 import { useAuth } from '../../hooks/useAuth';
@@ -17,12 +22,37 @@ import { AppStackParamList } from '../../navigation/type';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { View as MotiView } from 'moti';
+import { getUserProgress } from '../../services/api';
+import { useFocusEffect } from '@react-navigation/native';
 const { width } = Dimensions.get('window');
+
 export default function HomeScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<AppStackParamList>>();
   const { theme } = useTheme();
   const { user } = useAuth();
+  const [loading, setLoading] = React.useState(false);
+  const [userProgress, setUserProgress] = useState<User>();
+  useFocusEffect(
+    useCallback(() => {
+      const fetchUserProgress = async () => {
+        if (!user) {
+          return;
+        }
+        try {
+          setLoading(true);
+          const progress = await getUserProgress(user?.id as number);
+          setUserProgress(progress.userProgress);
+          console.log('User progress:', progress);
+        } catch (error) {
+          console.error('Error fetching user progress:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchUserProgress();
+    }, [user]),
+  );
 
   const gameModes: Card[] = [
     {
@@ -110,7 +140,19 @@ export default function HomeScreen() {
         }),
     },
   ];
-
+  const rewards = useMemo(() => {
+    return calculateUserRewards(
+      userProgress?.wonCount || 0,
+      userProgress?.lostCount || 0,
+    );
+  }, [userProgress]);
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color={theme.primary} />
+      </View>
+    );
+  }
   return (
     <ImageBackground
       source={require('../../../assets/background_bg.png')}
@@ -130,58 +172,59 @@ export default function HomeScreen() {
               >
                 <Text className="text-2xl">{user?.avatar}</Text>
               </View>
-              <View className="ml-2">
-                <Text
-                  className="text-xs font-semibold"
-                  style={{ color: theme.textSecondary }}
-                >
-                  Namaste! 👋
-                </Text>
-                <Text
-                  className="text-xl font-bold"
-                  style={{ color: theme.text }}
-                >
-                  {user?.name}
-                </Text>
-              </View>
             </View>
-            <View className="flex-row items-center space-x-2">
-              <View
-                className="flex-row items-center px-2.5 py-1.5 rounded-full border mr-1"
-                style={{
-                  backgroundColor: theme.card,
-                  borderColor: theme.border,
-                }}
-              >
-                <Icon name="database" size={width * 0.04} color="#EAB308" />
-                <Text
-                  className="text-xs font-black ml-1"
-                  style={{ color: theme.text }}
+            {userProgress && (
+              <View className="flex-row items-center space-x-2">
+                <View
+                  className="flex-row items-center px-2.5 py-1.5 rounded-full border mr-1"
+                  style={{
+                    backgroundColor: theme.card,
+                    borderColor: theme.border,
+                  }}
                 >
-                  12,568 pt
-                </Text>
-              </View>
+                  <FontAwesome5
+                    name="coins"
+                    size={width * 0.05}
+                    color="#EAB308"
+                  />
+                  <Text
+                    className="text-[12px] font-black ml-1"
+                    style={{ color: theme.primaryYellowDark }}
+                  >
+                    {rewards.coins} Coins
+                  </Text>
+                </View>
 
-              <View
-                className="flex-row items-center px-2.5 py-1.5 rounded-full border"
-                style={{
-                  backgroundColor: theme.card,
-                  borderColor: theme.border,
-                }}
-              >
-                <Icon
-                  name="award"
-                  size={width * 0.04}
-                  color={theme.secondary}
-                />
-                <Text
-                  className="text-xs font-bold ml-1"
-                  style={{ color: theme.text }}
+                <View
+                  className="flex-row items-center px-2.5 py-1.5 rounded-full border"
+                  style={{
+                    backgroundColor: theme.card,
+                    borderColor: rewards.awardBadgeColor,
+                  }}
                 >
-                  1,250
-                </Text>
+                  {rewards.awardTitle === 'Diamond' ||
+                  rewards.awardTitle === 'Novice' ? (
+                    <MaterialCommunityIcons
+                      name={rewards.iconName}
+                      size={width * 0.05}
+                      color={rewards.awardBadgeColor}
+                    />
+                  ) : (
+                    <FontAwesome5
+                      name={rewards.iconName}
+                      size={width * 0.05}
+                      color={rewards.awardBadgeColor}
+                    />
+                  )}
+                  <Text
+                    className="text-[13px] font-bold ml-1"
+                    style={{ color: theme.text }}
+                  >
+                    {rewards.awardTitle} ({userProgress.wonCount} Wins)
+                  </Text>
+                </View>
               </View>
-            </View>
+            )}
           </View>
           <View
             className="m-4 rounded-3xl p-6 relative overflow-hidden bg-white border"
@@ -190,10 +233,10 @@ export default function HomeScreen() {
             <View className="w-2/3 pr-2">
               <View className="bg-amber-100 self-start px-4 py-1 rounded-md mb-2">
                 <Text
-                  className="text-xs font-bold tracking-wider  uppercase"
+                  className="text-[13px] font-bold tracking-wider  uppercase"
                   style={{ color: theme.iconText || '#F59E0B' }}
                 >
-                  Daily Challenge
+                  {formatName(user?.name || '')}
                 </Text>
               </View>
               <Text
@@ -203,31 +246,16 @@ export default function HomeScreen() {
                 Ready for Bollywood Trivia?
               </Text>
               <Text
-                className="text-xs leading-relaxed"
+                className="text-[14px] font-bold leading-relaxed"
                 style={{ color: theme.textSecondary }}
               >
                 Test your cinematic knowledge across 6 custom game modes!
               </Text>
-
-              <TouchableOpacity
-                activeOpacity={0.8}
-                className="mt-4 py-2.5 px-5 rounded-full self-start"
-                style={{ backgroundColor: theme.primary }}
-              >
-                <Text className="text-sm font-bold text-white">
-                  Play Blitz Mode 🚀
-                </Text>
-              </TouchableOpacity>
             </View>
 
-            <View className="absolute right-2 bottom-2 items-center justify-center">
+            <View className="absolute right-2 top-2 bottom-2 items-center justify-center">
               <View className="w-28 h-28 bg-orange-50 rounded-full items-center justify-center border border-amber-100">
                 <Text className="text-6xl animate-bounce">{user?.avatar}</Text>
-              </View>
-              <View className="bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 mt-1">
-                <Text className="text-[9px] font-bold text-amber-700">
-                  Hey {user?.name} ✨
-                </Text>
               </View>
             </View>
           </View>

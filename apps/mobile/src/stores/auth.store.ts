@@ -10,13 +10,17 @@ interface User {
 }
 type AuthState = {
   user: User | null;
+  totalQuestions: number;
   setUser: (user: any) => void;
+  setTotalQuestions: (totalQuestions: number) => void;
 };
 
 const useAuthStore = create<AuthState>()(
   persist(
     set => ({
       user: null,
+      totalQuestions: 0,
+      setTotalQuestions: (totalQuestions: number) => set({ totalQuestions }),
       setUser: (user: any) => set({ user }),
     }),
     {

@@ -34,15 +34,6 @@ export async function getLevelsForMode(userId: number, mode: GameMode) {
   }
   return { levels, questionCount: questionsCount };
 }
-export async function getQuestion(mode: GameMode, level: number) {
-  const questions = await prisma.question.findMany({
-    where: {
-      mode,
-      levelNumber: level,
-    },
-  });
-  return questions;
-}
 export async function updateLevelData(
   userId: number,
   mode: GameMode,
@@ -103,4 +94,95 @@ export async function updateLevelData(
     });
   }
   return level + 1;
+}
+interface User {
+  userId: number;
+  name: string;
+  avatar: string;
+  wonCount: number;
+  lostCount: number;
+}
+export async function getAllUsersWithProgress(
+  page: number = 1,
+  pageSize: number = 20,
+  mode?: GameMode,
+) {
+  const currentPage = Math.max(1, page);
+  const limit = Math.max(1, pageSize);
+  const offset = (currentPage - 1) * limit;
+  let rawLeaderboard: User[];
+  if (mode) {
+    rawLeaderboard = await prisma.$queryRaw`
+    SELECT 
+      u.id AS "userId",
+      u.name,
+      u.avatar,
+      COALESCE(SUM(cardinality(gp."levelsWon")), 0)::INT AS "wonCount",
+      COALESCE(SUM(cardinality(gp."levelsLost")), 0)::INT AS "lostCount"
+    FROM "User" u
+    LEFT JOIN "UserGameProgress" gp ON u.id = gp."userId"
+    WHERE gp.mode = ${mode}
+    GROUP BY u.id, u.name, u.avatar
+    ORDER BY "wonCount" DESC, u.id ASC
+    LIMIT ${limit}
+    OFFSET ${offset}
+  `;
+  } else {
+    rawLeaderboard = await prisma.$queryRaw`
+    SELECT 
+      u.id AS "userId",
+      u.name,
+      u.avatar,
+      COALESCE(SUM(cardinality(gp."levelsWon")), 0)::INT AS "wonCount",
+      COALESCE(SUM(cardinality(gp."levelsLost")), 0)::INT AS "lostCount"
+    FROM "User" u
+    LEFT JOIN "UserGameProgress" gp ON u.id = gp."userId"
+    GROUP BY u.id, u.name, u.avatar
+    ORDER BY "wonCount" DESC, u.id ASC
+    LIMIT ${limit}
+    OFFSET ${offset}
+  `;
+  }
+  if (rawLeaderboard.length === 0) {
+    return {
+      users: [],
+      pagination: { currentPage, pageSize: limit, hasMore: false },
+    };
+  }
+  const users = rawLeaderboard.map((user) => ({
+    userId: user.userId,
+    name: user.name,
+    avatar: user.avatar,
+    wonCount: user.wonCount,
+    lostCount: user.lostCount,
+  }));
+  const hasMore = rawLeaderboard.length === limit;
+  return {
+    users,
+    pagination: { currentPage, pageSize: limit, hasMore },
+  };
+}
+interface UserProgress {
+  wonCount: number;
+  lostCount: number;
+}
+export async function getUserProgress(userId: number) {
+  const userProgress: UserProgress[] = await prisma.$queryRaw`
+    SELECT 
+      COALESCE(SUM(cardinality(gp."levelsWon")), 0)::INT AS "wonCount",
+      COALESCE(SUM(cardinality(gp."levelsLost")), 0)::INT AS "lostCount"
+    FROM "UserGameProgress" gp
+    WHERE gp."userId" = ${userId}
+  `;
+  if (userProgress.length === 0) {
+    return {
+      wonCount: 0,
+      lostCount: 0,
+    };
+  }
+
+  return {
+    wonCount: userProgress[0]?.wonCount,
+    lostCount: userProgress[0]?.lostCount,
+  };
 }

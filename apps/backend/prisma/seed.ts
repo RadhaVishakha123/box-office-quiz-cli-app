@@ -2,16 +2,20 @@ import { GameMode } from '../generated/prisma/enums.js';
 import prisma from '../src/config/prisma.js';
 
 async function main() {
-  console.log('🌱 Starting database question seeding...');
+  console.log('🌱 Starting complete database seeding...');
 
-  // 1. Clean out existing questions to prevent unique constraint crashes during dev testing
+  // 1. Clean existing records in correct order (child tables first to satisfy foreign keys)
+  await prisma.userGameProgress.deleteMany({});
   await prisma.question.deleteMany({});
+  await prisma.user.deleteMany({});
 
-  // 2. Compile our structural dataset array mapping to the single Question table
+  console.log('🧹 Cleaned existing database records.');
+
+  // ==========================================
+  // --- 2. SEED QUESTIONS ---
+  // ==========================================
   const initialQuestions = [
-    // ==========================================
-    // --- MODE 1: BLURRED_POSTER ---
-    // ==========================================
+    // BLURRED_POSTER
     {
       mode: GameMode.BLURRED_POSTER,
       levelNumber: 1,
@@ -63,9 +67,7 @@ async function main() {
       },
     },
 
-    // ==========================================
-    // --- MODE 2: EMOJI_RIDDLES ---
-    // ==========================================
+    // EMOJI_RIDDLES
     {
       mode: GameMode.EMOJI_RIDDLES,
       levelNumber: 1,
@@ -117,9 +119,7 @@ async function main() {
       },
     },
 
-    // ==========================================
-    // --- MODE 3: LETTER_PUZZLE ---
-    // ==========================================
+    // LETTER_PUZZLE
     {
       mode: GameMode.LETTER_PUZZLE,
       levelNumber: 1,
@@ -160,15 +160,13 @@ async function main() {
       mode: GameMode.LETTER_PUZZLE,
       levelNumber: 5,
       content: {
-        scrambledLetters: ['U', 'D', 'M', 'B', 'O'],
+        scrambledLetters: ['S', 'T', 'R', 'E', 'E'], // Fixed typo from 'DUMBO'
         clue: 'Classic horror-comedy set in Chanderi starring Rajkummar Rao.',
         correctAnswer: 'STREE',
       },
     },
 
-    // ==========================================
-    // --- MODE 4: DIALOGUE_GURU ---
-    // ==========================================
+    // DIALOGUE_GURU
     {
       mode: GameMode.DIALOGUE_GURU,
       levelNumber: 1,
@@ -221,9 +219,7 @@ async function main() {
       },
     },
 
-    // ==========================================
-    // --- MODE 5: SPOT_THE_EXACT ---
-    // ==========================================
+    // SPOT_THE_EXACT
     {
       mode: GameMode.SPOT_THE_EXACT,
       levelNumber: 1,
@@ -290,9 +286,7 @@ async function main() {
       },
     },
 
-    // ==========================================
-    // --- MODE 6: MISSING_LETTERS ---
-    // ==========================================
+    // MISSING_LETTERS
     {
       mode: GameMode.MISSING_LETTERS,
       levelNumber: 1,
@@ -300,7 +294,7 @@ async function main() {
         maskedWord: 'D_NG_L',
         clue: "Aamir Khan's record-breaking wrestling biopic.",
         correctAnswer: 'DANGAL',
-        scrambledLetters: ['A', 'A', 'N', 'M', 'G', 'L', 'O', 'P'], // Missing: A, A
+        scrambledLetters: ['A', 'A', 'N', 'M', 'G', 'L', 'O', 'P'],
       },
     },
     {
@@ -310,7 +304,7 @@ async function main() {
         maskedWord: 'P_TH__N',
         clue: "Shah Rukh Khan's grand espionage action comeback movie.",
         correctAnswer: 'PATHAAN',
-        scrambledLetters: ['A', 'A', 'A', 'R', 'H', 'M', 'T', 'S'], // Missing: A, H, A
+        scrambledLetters: ['A', 'A', 'A', 'R', 'H', 'M', 'T', 'S'],
       },
     },
     {
@@ -320,7 +314,7 @@ async function main() {
         maskedWord: 'BR_HM_STR_',
         clue: 'Astraverse fantasy film starring Ranbir Kapoor and Alia Bhatt.',
         correctAnswer: 'BRAHMASTRA',
-        scrambledLetters: ['A', 'A', 'A', 'M', 'S', 'H', 'K', 'T', 'V', 'B'], // Missing: A, A, A
+        scrambledLetters: ['A', 'A', 'A', 'M', 'S', 'H', 'K', 'T', 'V', 'B'],
       },
     },
     {
@@ -330,7 +324,7 @@ async function main() {
         maskedWord: 'QU__N',
         clue: 'Kangana Ranaut solo honeymoon cult classic movie.',
         correctAnswer: 'QUEEN',
-        scrambledLetters: ['E', 'E', 'O', 'U', 'I', 'N', 'Z', 'M'], // Missing: E, E
+        scrambledLetters: ['E', 'E', 'O', 'U', 'I', 'N', 'Z', 'M'],
       },
     },
     {
@@ -340,25 +334,216 @@ async function main() {
         maskedWord: 'CH_K D_! IND__',
         clue: 'Legendary Indian women hockey team sports drama.',
         correctAnswer: 'CHAK DE! INDIA',
-        scrambledLetters: ['A', 'E', 'I', 'A', 'K', 'D', 'N', 'H', 'S', 'T'], // Missing: A, E, I, A
+        scrambledLetters: ['A', 'E', 'I', 'A', 'K', 'D', 'N', 'H', 'S', 'T'],
       },
     },
   ];
 
-  // 3. Loop through individual items to commit them cleanly into Postgres rows
-  for (const item of initialQuestions) {
-    await prisma.question.create({
-      data: {
-        mode: item.mode,
-        levelNumber: item.levelNumber,
-        content: item.content, // Prisma cleanly converts this object into a native JSON column string
-      },
-    });
-  }
+  await prisma.question.createMany({
+    data: initialQuestions,
+  });
+  console.log(`✅ Seeded ${initialQuestions.length} Questions`);
 
+  // ==========================================
+  // --- 3. SEED USERS ---
+  // ==========================================
+  const newUsersData = [
+    {
+      deviceToken: 'dt_iOS_981a17fa_2026_x01',
+      deviceType: 'iOS',
+      name: 'Aarav Sharma',
+      avatar: '🐻',
+    },
+    {
+      deviceToken: 'dt_Android_442b881c_2026_x02',
+      deviceType: 'Android',
+      name: 'Ananya Patel',
+      avatar: '🧸',
+    },
+    {
+      deviceToken: 'dt_iOS_110c993d_2026_x03',
+      deviceType: 'iOS',
+      name: 'Rohan Verma',
+      avatar: '🐼',
+    },
+    {
+      deviceToken: 'dt_Android_773d224e_2026_x04',
+      deviceType: 'Android',
+      name: 'Priya Nair',
+      avatar: '🐨',
+    },
+    {
+      deviceToken: 'dt_iOS_334e555f_2026_x05',
+      deviceType: 'iOS',
+      name: 'Kabir Mehta',
+      avatar: '🐯',
+    },
+    {
+      deviceToken: 'dt_Android_885f666g_2026_x06',
+      deviceType: 'Android',
+      name: 'Diya Joshi',
+      avatar: '🦁',
+    },
+    {
+      deviceToken: 'dt_iOS_556g777h_2026_x07',
+      deviceType: 'iOS',
+      name: 'Siddharth Rao',
+      avatar: '🦊',
+    },
+    {
+      deviceToken: 'dt_Android_227h888i_2026_x08',
+      deviceType: 'Android',
+      name: 'Isha Kapoor',
+      avatar: '🐱',
+    },
+    {
+      deviceToken: 'dt_iOS_998i000j_2026_x09',
+      deviceType: 'iOS',
+      name: 'Vikram Singh',
+      avatar: '🐶',
+    },
+    {
+      deviceToken: 'dt_Android_119j222k_2026_x10',
+      deviceType: 'Android',
+      name: 'Sneha Reddy',
+      avatar: '🐼',
+    },
+  ];
+
+  // Insert users individually and collect created records to retain real IDs
+  const createdUsers = [];
+  for (const user of newUsersData) {
+    const createdUser = await prisma.user.create({ data: user });
+    createdUsers.push(createdUser);
+  }
+  console.log(`✅ Seeded ${createdUsers.length} Users`);
+
+  // ==========================================
+  // --- 4. SEED USER GAME PROGRESS ---
+  // ==========================================
+  // Dynamically attach progress using actual database user IDs
+  // Add '!' after array index access so TypeScript knows userId is strictly a number
+  const gameProgressData = [
+    // User 1
+    {
+      userId: createdUsers[0]!.id,
+      mode: GameMode.EMOJI_RIDDLES,
+      currentLevel: 15,
+      levelsWon: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+      levelsLost: [3, 8],
+    },
+    {
+      userId: createdUsers[0]!.id,
+      mode: GameMode.DIALOGUE_GURU,
+      currentLevel: 8,
+      levelsWon: [1, 2, 3, 4, 5, 6, 7],
+      levelsLost: [2],
+    },
+
+    // User 2
+    {
+      userId: createdUsers[1]!.id,
+      mode: GameMode.EMOJI_RIDDLES,
+      currentLevel: 22,
+      levelsWon: Array.from({ length: 21 }, (_, i) => i + 1),
+      levelsLost: [5, 12, 19],
+    },
+    {
+      userId: createdUsers[1]!.id,
+      mode: GameMode.MISSING_LETTERS,
+      currentLevel: 10,
+      levelsWon: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+      levelsLost: [4],
+    },
+
+    // User 3
+    {
+      userId: createdUsers[2]!.id,
+      mode: GameMode.DIALOGUE_GURU,
+      currentLevel: 18,
+      levelsWon: Array.from({ length: 17 }, (_, i) => i + 1),
+      levelsLost: [6, 11],
+    },
+    {
+      userId: createdUsers[2]!.id,
+      mode: GameMode.MISSING_LETTERS,
+      currentLevel: 5,
+      levelsWon: [1, 2, 3, 4],
+      levelsLost: [],
+    },
+
+    // User 4
+    {
+      userId: createdUsers[3]!.id,
+      mode: GameMode.EMOJI_RIDDLES,
+      currentLevel: 30,
+      levelsWon: Array.from({ length: 29 }, (_, i) => i + 1),
+      levelsLost: [10, 20],
+    },
+
+    // User 5
+    {
+      userId: createdUsers[4]!.id,
+      mode: GameMode.DIALOGUE_GURU,
+      currentLevel: 12,
+      levelsWon: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      levelsLost: [3],
+    },
+
+    // User 6
+    {
+      userId: createdUsers[5]!.id,
+      mode: GameMode.MISSING_LETTERS,
+      currentLevel: 16,
+      levelsWon: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+      levelsLost: [2, 9, 14],
+    },
+
+    // User 7
+    {
+      userId: createdUsers[6]!.id,
+      mode: GameMode.EMOJI_RIDDLES,
+      currentLevel: 8,
+      levelsWon: [1, 2, 3, 4, 5, 6, 7],
+      levelsLost: [4],
+    },
+
+    // User 8
+    {
+      userId: createdUsers[7]!.id,
+      mode: GameMode.DIALOGUE_GURU,
+      currentLevel: 25,
+      levelsWon: Array.from({ length: 24 }, (_, i) => i + 1),
+      levelsLost: [7, 15, 21],
+    },
+
+    // User 9
+    {
+      userId: createdUsers[8]!.id,
+      mode: GameMode.MISSING_LETTERS,
+      currentLevel: 11,
+      levelsWon: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      levelsLost: [5],
+    },
+
+    // User 10
+    {
+      userId: createdUsers[9]!.id,
+      mode: GameMode.EMOJI_RIDDLES,
+      currentLevel: 6,
+      levelsWon: [1, 2, 3, 4, 5],
+      levelsLost: [2],
+    },
+  ];
+
+  await prisma.userGameProgress.createMany({
+    data: gameProgressData,
+  });
   console.log(
-    `✅ Successfully seeded ${initialQuestions.length} sample levels!`,
+    `✅ Seeded ${gameProgressData.length} User Game Progress records`,
   );
+
+  console.log('🎉 Database seeding completed successfully!');
 }
 
 main()

@@ -4,6 +4,7 @@ import { MotiView } from 'moti';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuth } from '../../hooks/useAuth';
 import CardPage from '../../components/CardPage';
+import { formatName } from '../../utils/game.util';
 import { Card } from '../../types/type';
 import EditProfileModal from '../../components/EditProfileModal';
 
@@ -90,7 +91,7 @@ export default function ProfileScreen() {
             className="text-2xl font-black tracking-wide text-center"
             style={{ color: theme.text }}
           >
-            {user?.name}
+            {formatName(user?.name || 'Guest')}
           </Text>
           <Text
             className="text-md font-semibold tracking-wider mt-1 opacity-80"

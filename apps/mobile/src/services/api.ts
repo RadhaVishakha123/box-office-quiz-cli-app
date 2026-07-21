@@ -36,7 +36,7 @@ export async function getAvatarOptions() {
 }
 
 export async function getQuestion(mode: GameMode, level: number) {
-  const response = await api.post('/game/question', {
+  const response = await api.post('/question', {
     mode,
     level,
   });
@@ -61,5 +61,29 @@ export async function updateLevelData(
     level,
     won,
   });
+  return response.data;
+}
+export async function getAllUsersWithProgress(
+  page: number,
+  pageSize: number,
+  mode?: GameMode,
+) {
+  const response = await api.post('/game/all-users-with-progress', {
+    page,
+    pageSize,
+    mode,
+  });
+  return response.data;
+}
+
+export async function getUserProgress(userId: number) {
+  const response = await api.post(`/game/user-progress/`, {
+    userId: userId,
+  });
+  return response.data;
+}
+export async function getQuestionsCount() {
+  const response = await api.get('/question/count');
+  console.log('questionsCount:', response.data);
   return response.data;
 }
